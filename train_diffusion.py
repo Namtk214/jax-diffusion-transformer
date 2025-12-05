@@ -25,7 +25,7 @@ tf.config.set_visible_devices([], "TPU")
 import matplotlib.pyplot as plt
 
 # Sửa thành:
-from utils import setup_, default__config
+# from utils import setup_, default__config
 from utils.train_state import TrainState, target_update
 from utils.checkpoint import Checkpoint
 from utils.stable_vae import StableVAE
