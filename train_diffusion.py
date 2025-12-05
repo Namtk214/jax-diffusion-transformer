@@ -15,6 +15,7 @@ import jax.numpy as jnp
 import flax
 import optax
 import wandb
+wandb.login(key="5e10a9d73f6ff37806a6df5622f0ab64e2037c80")
 from ml_collections import config_flags
 import ml_collections
 import tensorflow_datasets as tfds
@@ -23,7 +24,7 @@ tf.config.set_visible_devices([], "GPU")
 tf.config.set_visible_devices([], "TPU")
 import matplotlib.pyplot as plt
 
-from utils.wandb import setup_wandb, default_wandb_config
+from utils. import setup_, default__config
 from utils.train_state import TrainState, target_update
 from utils.checkpoint import Checkpoint
 from utils.stable_vae import StableVAE
@@ -62,7 +63,7 @@ model_config = ml_collections.ConfigDict({
     'eps_update_rate': 0.9999,
 })
 
-wandb_config = default_wandb_config()
+_config = default_wandb_config()
 wandb_config.update({
     'project': 'diffusion',
     'name': 'diffusion_{dataset_name}',
