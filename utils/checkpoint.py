@@ -67,17 +67,29 @@ class Checkpoint:
             with tf.io.gfile.GFile(filename, 'wb') as f:
                 f.write(content)
         else:
-            dirpath = parent_dir(filename)
-            os.makedirs(dirpath, exist_ok=True)
+            # filename ở đây được dùng như MỘT THƯ MỤC chứa checkpoint
+            # Ví dụ: /kaggle/working/checkpoints/dit_celebahq
+            os.makedirs(filename, exist_ok=True)
 
-            tmp = os.path.join(dirpath, name(filename) + '.tmp')
+            # file tạm nằm ở parent dir, tên: <name(filename)>.tmp
+            # VD: /kaggle/working/checkpoints/dit_celebahq.tmp
+            tmp = os.path.join(parent_dir(filename), name(filename) + '.tmp')
             with open(tmp, 'wb') as f:
                 f.write(content)
 
-            # Ghi đè nếu filename đã tồn tại (fix lỗi "Destination path ... already exists")
-            os.replace(tmp, filename)
+            # file đích thật sự nằm TRONG thư mục filename,
+            # VD: /kaggle/working/checkpoints/dit_celebahq/dit_celebahq.tmp
+            dest = os.path.join(filename, name(filename) + '.tmp')
+
+            # Nếu đã có file cũ thì xoá đi -> tránh lỗi "Destination path ... already exists"
+            if os.path.exists(dest):
+                os.remove(dest)
+
+            # Ghi đè 1 cách "atomic"
+            os.replace(tmp, dest)
 
         print('Wrote checkpoint.')
+
 
 
     def load_as_dict(self, filename=None):
