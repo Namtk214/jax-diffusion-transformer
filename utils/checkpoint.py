@@ -67,12 +67,18 @@ class Checkpoint:
             with tf.io.gfile.GFile(filename, 'wb') as f:
                 f.write(content)
         else:
-            os.makedirs(filename, exist_ok=True)
-            tmp = parent_dir(filename) + '/' + name(filename) + '.tmp'
+            dirpath = parent_dir(filename)
+            os.makedirs(dirpath, exist_ok=True)
+
+            tmp = os.path.join(dirpath, name(filename) + '.tmp')
             with open(tmp, 'wb') as f:
                 f.write(content)
-            shutil.move(tmp, filename)
+
+            # Ghi đè nếu filename đã tồn tại (fix lỗi "Destination path ... already exists")
+            os.replace(tmp, filename)
+
         print('Wrote checkpoint.')
+
 
     def load_as_dict(self, filename=None):
         assert self._filename or filename
