@@ -17,7 +17,7 @@ nonpytree_field = functools.partial(flax.struct.field, pytree_node=False)
 
 # Interpolate from model to target_model. Tau = ratio of current model to target model
 def target_update(model, target_model, tau):
-    new_target_params = jax.tree_map(
+    new_target_params = jax.jax.tree_util.tree_map(
         lambda p, tp: p * tau + tp * (1 - tau), model.params, target_model.params
     )
     return target_model.replace(params=new_target_params)
