@@ -65,7 +65,7 @@ model_config = ml_collections.ConfigDict({
     'eps_update_rate': 0.9999,
 })
 
-_config = default_wandb_config()
+wandb_config = default_wandb_config()
 wandb_config.update({
     'project': 'diffusion',
     'name': 'diffusion_{dataset_name}',
