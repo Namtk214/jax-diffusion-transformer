@@ -29,6 +29,7 @@ from utils.checkpoint import Checkpoint
 from utils.stable_vae import StableVAE
 from schedulers import GaussianDiffusion
 from diffusion_transformer import DiT
+from jax import tree_util
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('dataset_name', 'imagenet256', 'Environment name.')
@@ -310,7 +311,7 @@ def main(_):
         model, update_info = model.update(batch_images, batch_labels)
 
         if i % FLAGS.log_interval == 0:
-            update_info = jax.tree_map(lambda x: x.mean(), update_info)
+            update_info = jax.tree_util.tree_map(lambda x: x.mean(), update_info)
             train_metrics = {f'training/{k}': v for k, v in update_info.items()}
             if jax.process_index() == 0:
                 wandb.log(train_metrics, step=i)
@@ -323,7 +324,7 @@ def main(_):
             if FLAGS.use_stable_vae:
                 valid_images = vae_encode_pmap(vae_rng, valid_images)
             _, valid_update_info = model.update(valid_images, valid_labels)
-            valid_update_info = jax.tree_map(lambda x: x.mean(), valid_update_info)
+            valid_update_info = jax.tree_util.tree_map(lambda x: x.mean(), valid_update_info)
             valid_metrics = {f'validation/{k}': v for k, v in valid_update_info.items()}
             if jax.process_index() == 0:
                 wandb.log(valid_metrics, step=i)
