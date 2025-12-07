@@ -164,7 +164,7 @@ def main(_):
                 image = (image - 0.5) / 0.5 # Normalize to [-1, 1]
                 return image,  data['label']
 
-            dataset = tfds.load('celeba256', split='train')
+            dataset = tfds.load('celebahq256', split='train')
             dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
             dataset = dataset.shuffle(10000, seed=42, reshuffle_each_iteration=True)
             dataset = dataset.repeat()
