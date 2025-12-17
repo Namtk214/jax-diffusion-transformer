@@ -183,57 +183,92 @@ def main(_):
         setup_wandb(FLAGS.model.to_dict(), **FLAGS.wandb)
 
     def get_dataset(is_train):
-        if 'imagenet' in FLAGS.dataset_name:
-            def deserialization_fn(data):
-                image = data['image']
-                min_side = tf.minimum(tf.shape(image)[0], tf.shape(image)[1])
-                image = tf.image.resize_with_crop_or_pad(image, min_side, min_side)
-                if 'imagenet256' in FLAGS.dataset_name:
-                    image = tf.image.resize(image, (256, 256), antialias=True)
-                elif 'imagenet128' in FLAGS.dataset_name:
-                    image = tf.image.resize(image, (128, 128), antialias=True)
-                else:
-                    raise ValueError(f"Unknown dataset {FLAGS.dataset_name}")
-                if is_train:
-                    image = tf.image.random_flip_left_right(image)
-                image = tf.cast(image, tf.float32) / 255.0
-                image = (image - 0.5) / 0.5 # Normalize to [-1, 1]
-                return image, data['label']
-
-            split = tfds.split_for_jax_process('train' if (is_train or FLAGS.debug_overfit) else 'validation', drop_remainder=True)
-            dataset = tfds.load('imagenet2012', split=split)
-            dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
-            if FLAGS.debug_overfit:
-                dataset = dataset.take(8)
-                dataset = dataset.repeat()
-                dataset = dataset.batch(local_batch_size)
+    if 'imagenet' in FLAGS.dataset_name:
+        def deserialization_fn(data):
+            image = data['image']
+            min_side = tf.minimum(tf.shape(image)[0], tf.shape(image)[1])
+            image = tf.image.resize_with_crop_or_pad(image, min_side, min_side)
+            if 'imagenet256' in FLAGS.dataset_name:
+                image = tf.image.resize(image, (256, 256), antialias=True)
+            elif 'imagenet128' in FLAGS.dataset_name:
+                image = tf.image.resize(image, (128, 128), antialias=True)
             else:
-                dataset = dataset.shuffle(10000, seed=42, reshuffle_each_iteration=True)
-                dataset = dataset.repeat()
-                dataset = dataset.batch(local_batch_size)
-                dataset = dataset.prefetch(tf.data.AUTOTUNE)
-            dataset = tfds.as_numpy(dataset)
-            dataset = iter(dataset)
-            return dataset
-        elif FLAGS.dataset_name == 'celebahq256':
-            def deserialization_fn(data):
-                image = data['image']
-                image = tf.cast(image, tf.float32)
-                image = image / 255.0
-                image = (image - 0.5) / 0.5 # Normalize to [-1, 1]
-                return image,  data['label']
-
-            dataset = tfds.load('celebahq256', split='train')
-            dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
+                raise ValueError(f"Unknown dataset {FLAGS.dataset_name}")
+            if is_train:
+                image = tf.image.random_flip_left_right(image)
+            image = tf.cast(image, tf.float32) / 255.0
+            image = (image - 0.5) / 0.5  # Normalize to [-1, 1]
+            return image, data['label']
+        split = tfds.split_for_jax_process('train' if (is_train or FLAGS.debug_overfit) else 'validation', drop_remainder=True)
+        dataset = tfds.load('imagenet2012', split=split)
+        dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
+        if FLAGS.debug_overfit:
+            dataset = dataset.take(8)
+            dataset = dataset.repeat()
+            dataset = dataset.batch(local_batch_size)
+        else:
             dataset = dataset.shuffle(10000, seed=42, reshuffle_each_iteration=True)
             dataset = dataset.repeat()
             dataset = dataset.batch(local_batch_size)
             dataset = dataset.prefetch(tf.data.AUTOTUNE)
-            dataset = tfds.as_numpy(dataset)
-            dataset = iter(dataset)
-            return dataset
+        dataset = tfds.as_numpy(dataset)
+        dataset = iter(dataset)
+        return dataset
+    
+    elif 'cifar' in FLAGS.dataset_name:
+        def deserialization_fn(data):
+            image = data['image']
+            if is_train:
+                image = tf.image.random_flip_left_right(image)
+            image = tf.cast(image, tf.float32) / 255.0
+            image = (image - 0.5) / 0.5  # Normalize to [-1, 1]
+            return image, data['label']
+        
+        # Determine which CIFAR dataset to load
+        if FLAGS.dataset_name == 'cifar10':
+            tfds_name = 'cifar10'
+        elif FLAGS.dataset_name == 'cifar100':
+            tfds_name = 'cifar100'
         else:
-            raise ValueError(f"Unknown dataset {FLAGS.dataset_name}")
+            raise ValueError(f"Unknown CIFAR variant: {FLAGS.dataset_name}")
+        
+        split = tfds.split_for_jax_process('train' if (is_train or FLAGS.debug_overfit) else 'test', drop_remainder=True)
+        dataset = tfds.load(tfds_name, split=split)
+        dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
+        
+        if FLAGS.debug_overfit:
+            dataset = dataset.take(8)
+            dataset = dataset.repeat()
+            dataset = dataset.batch(local_batch_size)
+        else:
+            dataset = dataset.shuffle(10000, seed=42, reshuffle_each_iteration=True)
+            dataset = dataset.repeat()
+            dataset = dataset.batch(local_batch_size)
+            dataset = dataset.prefetch(tf.data.AUTOTUNE)
+        
+        dataset = tfds.as_numpy(dataset)
+        dataset = iter(dataset)
+        return dataset
+    
+    elif FLAGS.dataset_name == 'celebahq256':
+        def deserialization_fn(data):
+            image = data['image']
+            image = tf.cast(image, tf.float32)
+            image = image / 255.0
+            image = (image - 0.5) / 0.5  # Normalize to [-1, 1]
+            return image, data['label']
+        dataset = tfds.load('celebahq256', split='train')
+        dataset = dataset.map(deserialization_fn, num_parallel_calls=tf.data.AUTOTUNE)
+        dataset = dataset.shuffle(10000, seed=42, reshuffle_each_iteration=True)
+        dataset = dataset.repeat()
+        dataset = dataset.batch(local_batch_size)
+        dataset = dataset.prefetch(tf.data.AUTOTUNE)
+        dataset = tfds.as_numpy(dataset)
+        dataset = iter(dataset)
+        return dataset
+    
+    else:
+        raise ValueError(f"Unknown dataset {FLAGS.dataset_name}")
         
     dataset = get_dataset(is_train=True)
     dataset_valid = get_dataset(is_train=False)
