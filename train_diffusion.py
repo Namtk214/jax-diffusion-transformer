@@ -15,7 +15,7 @@ import jax.numpy as jnp
 import flax
 import optax
 import wandb
-# wandb.login(key="5e10a9d73f6ff37806a6df5622f0ab64e2037c80")
+wandb.login(key="5e10a9d73f6ff37806a6df5622f0ab64e2037c80")
 from ml_collections import config_flags
 import ml_collections
 import tensorflow_datasets as tfds
