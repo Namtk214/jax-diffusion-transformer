@@ -60,7 +60,7 @@ model_config = ml_collections.ConfigDict({
     'num_heads': 2,
     'mlp_ratio': 1,
     'class_dropout_prob': 0.1,
-    'num_classes': 1000,
+    'num_classes': 100,
     'cfg_scale': 4.0,
     'eps_update_rate': 0.9999,
 })
