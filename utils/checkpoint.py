@@ -13,7 +13,7 @@ def name(path: str) -> str:
 
 
 class Checkpoint:
-    def __init__(self, filename, parallel: bool = True, default_name: str = "checkpoint.pkl"):
+    def __init__(self, filename, parallel: bool = False, default_name: str = "checkpoint.pkl"):
         self._filename = filename
         self._default_name = default_name
         self._values = {}
