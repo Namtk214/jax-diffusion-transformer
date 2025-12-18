@@ -55,7 +55,7 @@ model_config = ml_collections.ConfigDict({
     'beta2': 0.99,
     'diffusion_timesteps': 500,
     'hidden_size': 64,
-    'patch_size': 8,
+    'patch_size': 1,
     'depth': 2,
     'num_heads': 2,
     'mlp_ratio': 1,
