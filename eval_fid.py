@@ -48,7 +48,7 @@ from utils.fid import get_fid_network, fid_from_stats
 #         delattr(flags.FLAGS, flag_name)
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('dataset_name', 'cifar100', 'Dataset name (cifar10, cifar100, imagenet128, imagenet256).')
+# flags.DEFINE_string('dataset_name', 'cifar100', 'Dataset name (cifar10, cifar100, imagenet128, imagenet256).')
 flags.DEFINE_string('load_dir', None, 'Checkpoint directory to load from.')
 flags.DEFINE_string('fid_stats', None, 'Path to FID statistics file (.npz). Auto-computed if not exists.')
 flags.DEFINE_string('output_dir', 'generated_samples', 'Directory to save generated samples.')
