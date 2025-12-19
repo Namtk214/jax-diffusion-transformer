@@ -43,9 +43,9 @@ from train_diffusion import DiffusionTrainer
 from utils.fid import get_fid_network, fid_from_stats
 
 # Clear any existing flags that might conflict
-for flag_name in ['dataset_name', 'load_dir', 'batch_size', 'seed']:
-    if hasattr(flags.FLAGS, flag_name):
-        delattr(flags.FLAGS, flag_name)
+# for flag_name in ['dataset_name', 'load_dir', 'batch_size', 'seed']:
+#     if hasattr(flags.FLAGS, flag_name):
+#         delattr(flags.FLAGS, flag_name)
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('dataset_name', 'cifar100', 'Dataset name (cifar10, cifar100, imagenet128, imagenet256).')
